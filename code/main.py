@@ -64,3 +64,15 @@ if __name__ == '__main__':
     print("[INFO] Feasible solution: %s" % (n_conflict == 0))
     print("[INFO] Sanity check passed: %s" % e.verify_solution(solution))
     print("***********************************************************")
+    
+    # Configuration du journal
+    logging.basicConfig(filename='logfile.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    # Messages de journalisation
+    logging.info("***********************************************************")
+    logging.info("[INFO] Solution obtained")
+    logging.info("[INFO] Execution time: %s minutes" % solving_time)
+    logging.info("[INFO] Number of conflicts: %s" % n_conflict)
+    logging.info("[INFO] Feasible solution: %s" % (n_conflict == 0))
+    logging.info("[INFO] Sanity check passed: %s" % e.verify_solution(solution))
+    logging.info("***********************************************************")
