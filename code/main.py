@@ -5,6 +5,7 @@ import solver_random
 import solver_heuristic
 import solver_local_search
 import solver_advanced
+import logging
 
 
 def parse_arguments():
