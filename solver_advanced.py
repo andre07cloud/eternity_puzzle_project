@@ -64,11 +64,14 @@ def tournament_selection(eternity_puzzle, population, parent_selected, parent_pa
     return selected [:parent_selected]
 
 
-def crossover(parent1, parent2): # Perform Exchange Region crossover
+def crossover(parent1, parent2): # Perform Exchange Region crossover  
+	
+    	
     board1 = format_solution_to_board(parent1)
     board2 = format_solution_to_board(parent2)
-    board_size = int(math.sqrt(len(board1)))
-    
+    print("********* BOARD 1 ******* ",board1)
+    board_size = len(board1)
+    print("********* BOARD SIZE ******* ",board_size)
     # Sélection aléatoire d'une région
     region_start = random.randint(0, board_size - 2)
     region_end = random.randint(region_start + 2, board_size)
@@ -187,7 +190,30 @@ def convert_board_to_solution(board):
             solution.append(board[i][j])
     
     return solution
-    
+
+def select_random_submatrix(matrix, submatrix_size):
+    """
+    Sélectionne aléatoirement une sous-matrice carrée dans une matrice carrée.
+
+    Args:
+    - matrix : La matrice carrée à partir de laquelle sélectionner la sous-matrice.
+    - submatrix_size : La taille de la sous-matrice carrée à sélectionner.
+
+    Returns:
+    - submatrix : La sous-matrice carrée sélectionnée.
+    """
+    matrix_size = len(matrix)
+    if matrix_size < submatrix_size:
+        raise ValueError("La taille de la matrice est inférieure à la taille de la sous-matrice.")
+
+    # Choisir aléatoirement les coordonnées du coin supérieur gauche de la sous-matrice
+    start_row = random.randint(0, matrix_size - submatrix_size)
+    start_col = random.randint(0, matrix_size - submatrix_size)
+
+    # Extraire la sous-matrice
+    submatrix = [row[start_col:start_col+submatrix_size] for row in matrix[start_row:start_row+submatrix_size]]
+
+    return submatrix, start_row, start_col, submatrix_size
 
 #perform region rotation of a region randomly selected from individual 
 def rotation_region(eternity_puzzle, solution, mutation_rate):
@@ -197,15 +223,22 @@ def rotation_region(eternity_puzzle, solution, mutation_rate):
     #print(solution)
 
     board = format_solution_to_board(solution)
-    #print("********* BOARD: ************************************************************************")
+    print("********* BOARD: ************************************************************************")
     
-    #print(board)
-    ####print("********* BOARD: *************************************************************************")
-    board_size = int(math.sqrt(len(board)))
+    print(board)
+    print("********* BOARD: *************************************************************************", len(board))
+    board_size = len(board)
     #index = random.randint(0, board_size-2)
     #index = 1
-    region_start = random.randint(0, board_size - 2)
-    region_end = random.randint(region_start + 2, board_size)
+    #region_start = random.randint(0, board_size - 2)
+    region_size = random.randint(2, board_size-1)
+    # Sélection aléatoire des coordonnées de la première région
+    region_start = (random.randint(0, board_size - 2), random.randint(0, board_size - 2))
+    region_start = (0, region_size)
+    region_end = (region_start[0] + region_size, region_start[1] + region_size)
+    #region_end = random.randint(region_start + 2, board_size)
+    #region_start = 1
+    #region_end = 2
     #####print("board_size #########", board_size )
     #width_region = random.randint(1,board_size-1)
     #####print("######## width_region:  ", width_region)
@@ -222,34 +255,33 @@ def rotation_region(eternity_puzzle, solution, mutation_rate):
         #####print("random+++++.... index", index+width_region, board_size-1)
 
     #m = index+width_region
+    print("REGION SIZE: ", region_size)
     row = 0
-    matrix = [[None]*region_end for _ in range(region_end)]
-    ####print("********* MATRIX BEFORE **************************************************: ")
-    ####print(matrix)
-    for k in range(region_start, region_end):
-    #matrix[row] = board[k][index : m]
-        col = 0
-        for j in range(region_start, region_end):
-          matrix[row][col] =  board[k][j]
-          col += 1
-        row += 1
-    ####print("********* board[k][index : m] MATRIX **************************************************: ", index, m)
-    ####print(board[k][j])
-    ####print("********* MATRIX **************************************************: ")
-    ####print(matrix)
-
+    matrix, start_row, start_col, submatrix_size = select_random_submatrix(board, region_size)
+    print("********* board[k][index : m] MATRIX **************************************************: ", start_row, start_col, submatrix_size)
+    print("********* MATRIX BEFORE **************************************************: ")
+    print(matrix)
     rotated_matrix = rotate_matrix(matrix)
-    ####print("********* MATRIX ROTATED **************************************************: ")
-    ####print(rotated_matrix)
+    print("********* MATRIX ROTATED **************************************************: ")
+    print(rotated_matrix)
     row = 0
-    for k in range(region_start, region_end):
+    n = m = submatrix_size
+    if start_row != 0:
+        n = submatrix_size+1
+    if start_col != 0:
+        m = submatrix_size+1
+    for i in range(start_row, n):
         col = 0
-        for j in range(region_start, region_end):
-            #board[k][j] = rotated_matrix[row][col]
-            ####print("rotated_matrix[row][col]", rotated_matrix[row][col])
-            board[k][j] = rotation_piece(eternity_puzzle, solution, rotated_matrix[row][col])
+        for j in range(start_col, m):
+            print("&&&&& j: ", j)
+            board[i][j] = rotation_piece(eternity_puzzle, solution, rotated_matrix[row][col])
             col +=1
         row +=1
+
+    
+
+    print("********* BOARD AFTER ROTATION **************************************************: ")
+    print(board)
 
     solution = convert_board_to_solution(board)
     return solution
@@ -325,6 +357,7 @@ def mutation(eternity_puzzle, individual, mutation_rate):
     def custom_mutation(eternity_puzzle):
         strategy = ["rotation", "swap"]
         strategy_selected = random.choice(strategy)
+        strategy_selected = "swap"
         if strategy_selected == "rotation":
             return rotation_region(eternity_puzzle, individual, mutation_rate)
         if strategy_selected == "swap":
